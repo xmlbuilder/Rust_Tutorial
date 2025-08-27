@@ -120,7 +120,7 @@ flowchart TD
     B --> D[mod server]
     A ==> C
 ```
-```
+
 
 > **자주 나는 오류**  
 > - `unresolved import`: `mod …;` 또는 `pub mod …;` 선언 누락  
