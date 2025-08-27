@@ -115,10 +115,18 @@ fn main() {
 
 ```mermaid
 flowchart TD
-    A[crate root (main.rs)] --> B[mod communicator]
-    B --> C[mod client]
-    B --> D[mod server]
-    A ==> C
+    A[🟦 Crate Root<br>main.rs]
+    B[📦 mod communicator]
+    C[🔹 mod client]
+    D[🔸 mod server]
+
+    A --> B
+    B --> C
+    B --> D
+    A --> C:::direct
+
+    classDef direct stroke:#f66,stroke-width:2px;
+
 ```
 
 
