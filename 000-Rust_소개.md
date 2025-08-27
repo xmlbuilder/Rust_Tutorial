@@ -31,3 +31,24 @@
 - C++ vs Rust which is faster?: 실제 문제 해결 과정에서 두 언어의 코드 작성 느낌과 성능 차이를 보여주는 흥미로운 실험입니다.
 
 ---
+
+## 🛠️ 툴 및 생태계 차이: Rust vs C++
+
+| **항목**             | **Rust**                                         | **C++**                                         |
+|----------------------|--------------------------------------------------|------------------------------------------------|
+| 빌드 시스템          | Cargo (빌드 + 패키지 관리 통합)                 | Make, CMake, Ninja 등 다양한 외부 도구         |
+| 패키지 관리          | crates.io + Cargo로 통합 관리                    | 공식 패키지 관리 없음 (vcpkg, Conan 등 사용)   |
+| 테스트 프레임워크    | 내장 테스트 지원 (`#[test]`)                     | Google Test, Catch2, Boost.Test 등              |
+| 문서화 도구          | `rustdoc`로 자동 문서 생성                       | Doxygen, Sphinx 등 외부 도구 사용               |
+| 디버깅 도구          | rust-gdb, rust-lldb, `println!` 매크로           | gdb, lldb, Visual Studio Debugger 등            |
+| 포맷터 및 린터       | rustfmt, clippy                                 | clang-format, cpplint, cppcheck 등              |
+| IDE 지원             | VS Code, IntelliJ Rust, CLion 등                 | Visual Studio, VS Code, CLion, Qt Creator 등    |
+| 생태계 특징          | 현대적이고 일관된 툴체인                         | 다양하고 유연하지만 통합성은 낮음               |
+
+
+
+## 🎯 요약 포인트
+- Rust는 안전성과 생산성을 중시하며, 툴체인이 통합되어 있어 개발 경험이 매끄럽습니다.
+- **C++**은 성능과 유연성을 극대화할 수 있지만, 툴과 스타일이 다양해 학습 곡선이 더 가파를 수 있습니다.
+- Rust의 Cargo는 빌드, 테스트, 문서화, 패키지 관리까지 하나로 통합된 반면, C++은 각 기능마다 별도의 도구를 조합해야 합니다.
+
