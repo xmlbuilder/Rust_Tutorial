@@ -46,9 +46,14 @@ hello/
 
 ```mermaid
 flowchart LR
-    A[Package (hello)] --> B[Binary Crate - src/main.rs]
-    A --> C[Library Crate - src/lib.rs]
-    B -->|depends_on| C
+    A[📦 Package: hello]
+    B[🔹 Binary Crate<br>src/main.rs]
+    C[📚 Library Crate<br>src/lib.rs]
+
+    A --> B
+    A --> C
+    B -->|depends on| C
+
 ```
 
 ---
