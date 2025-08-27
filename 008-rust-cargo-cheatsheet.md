@@ -112,12 +112,14 @@ fn main() {
 
 **Mermaid(모듈 트리):**
 
+
 ```mermaid
 flowchart TD
     A[crate root (main.rs)] --> B[mod communicator]
     B --> C[mod client]
     B --> D[mod server]
     A ==> C
+```
 ```
 
 > **자주 나는 오류**  
