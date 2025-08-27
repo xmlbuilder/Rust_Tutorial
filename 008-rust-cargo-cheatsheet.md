@@ -409,4 +409,158 @@ cargo run
 
 ---
 
+markdown# Rust Cargo & Module System 요약 설명서
+*이미지 예제를 바탕으로 한 단계별 설명*
+
+---
+
+## 개요
+이 문서는 스크린샷에 담긴 예시를 기반으로, **모듈 파일 분리**, **공개 범위(`pub`)**, **하위 폴더 모듈(`mod.rs`)**, **상수 재사용**을 차례로 설명합니다.  
+코드는 모두 Rust 2018+ 에디션을 기준으로 하며, `cargo run`으로 즉시 실행할 수 있습니다.
+
+---
+
+## 단일 파일 모듈: `my_module.rs`
+
+### 폴더 구조
+```
+src/
+├─ main.rs
+└─ my_module.rs
+```
+### text 모듈 구현 (`my_module.rs`)
+
+```rust
+pub fn greet() {
+    println!("Hi! I am hello_bot");
+}
+
+pub struct Person {
+    pub name: String,
+    age: i32,            // 비공개 필드
+}
+
+impl Person {
+    pub fn new(name: &str, age: i32) -> Self {
+        Person { name: String::from(name), age }
+    }
+    pub fn get_older(&mut self, year: i32) {
+        self.age += year;
+    }
+}
+```
+
+### 해설
+
+pub 키워드: 외부 모듈에서 접근 가능하도록 공개 범위를 지정합니다.
+구조체 Person: 공개지만, age 필드는 비공개입니다. 따라서 age에 직접 접근할 수 없고, 메서드(get_older)로만 조작합니다.
+
+main.rs에서 모듈 사용
+```rust
+mod my_module;                   // src/my_module.rs 포함
+use my_module::{greet, Person};  // 공개 항목만 임포트
+
+fn main() {
+    greet();
+
+    let mut john = Person::new("john", 20);
+    john.get_older(3);
+    println!("{}", john.name);
+    // println!("{}", john.age);  // 오류: 비공개 필드
+}
+```
+
+## 폴더 기반 하위 모듈: bots
+### 폴더 구조
+```
+textsrc/
+ ├─ bots/
+ │   ├─ hello_bot.rs
+ │   └─ mod.rs
+ ├─ main.rs
+ └─ my_module.rs
+```
+
+bots/mod.rs
+폴더를 모듈로 쓰려면 그 폴더 안에 mod.rs가 있어야 하며, 여기에서 하위 모듈들을 선언합니다.
+
+```rust
+pub mod hello_bot;   // hello_bot.rs를 하위 모듈로 노출
+bots/hello_bot.rs
+rustpub static BOT_NAME: &str = "hello_bot";
+
+pub fn hello() {
+    println!("Hello, humans!");
+}
+```
+
+### 해설
+
+static: 프로그램 수명 전체에 존재하는 전역 불변 참조를 선언합니다.
+pub: 붙였기 때문에 다른 모듈에서 crate::bots::hello_bot::BOT_NAME으로 접근 가능합니다.
+
+
+### my_module.rs에서 다른 모듈의 상수 사용
+
+```rust
+use crate::bots::hello_bot::BOT_NAME;
+
+pub fn greet() {
+    println!("Hi! I am {}", BOT_NAME);
+}
+```
+
+### 해설
+
+crate:: 접두사: 현재 크레이트의 루트에서부터 경로를 해석합니다.
+이 예시에서는 bots가 크레이트 루트(src/main.rs)에서 선언되므로 crate::bots::... 경로가 유효합니다.
+
+
+### main.rs에서 두 모듈을 함께 사용
+
+```rust
+mod my_module;  // src/my_module.rs
+mod bots;       // src/bots/mod.rs
+
+use my_module::{greet, Person};
+use bots::hello_bot::hello;
+
+fn main() {
+    hello();  // bots::hello_bot::hello()
+    greet();  // my_module::greet() - BOT_NAME 사용
+
+    let mut john = Person::new("john", 20);
+    john.get_older(3);
+    println!("{}", john.name);
+}
+```
+
+### 자주 하는 실수와 팁
+
+파일 경로와 모듈 선언 불일치:
+mod my_module; 선언을 했는데 src/my_module.rs가 없으면 에러.
+공개 범위 누락:
+외부에서 쓰려는 함수/구조체/상수에 pub 미지정.
+경로 접두사 헷갈림:
+크레이트 루트 기준은 crate::, 부모 모듈은 super::, 현재 모듈은 self::.
+폴더 모듈에서 mod.rs 누락:
+src/bots/mod.rs가 없으면 src/bots/hello_bot.rs를 모듈로 찾지 못함.
+
+
+### 빌드/실행 빠른 레퍼런스
+bash# 디버그 빌드
+cargo build
+
+### 실행(자동 빌드)
+cargo run
+
+### 빠른 타입체크
+cargo check
+
+## 마무리
+
+위 구조를 그대로 복사해 사용하면, 단일 파일 모듈 → 폴더 모듈 → 상수/함수 재사용 흐름을 자연스럽게 학습할 수 있습니다.
+문서에 포함된 코드는 그대로 컴파일/실행이 가능하며, 프로젝트가 커지면 워크스페이스로 확장하는 것을 권장합니다.
+
+---
 
