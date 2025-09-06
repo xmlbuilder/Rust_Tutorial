@@ -92,12 +92,13 @@ Rust의 메모리 흐름을 시각적으로 표현한 다이어그램은:
 
 ## 🧪 실전 예제로 배우는 Ownership & Borrowing
 ### 1. Ownership 이동 (Move)
+```rust
 fn main() {
     let s1 = String::from("Rust");
     let s2 = s1; // s1의 소유권이 s2로 이동
     // println!("{}", s1); // ❌ 에러! s1은 더 이상 유효하지 않음
 }
-
+```
 ➡️ s1은 더 이상 사용할 수 없어요. Rust는 이중 해제 방지를 위해 소유권을 강하게 관리합니다.
 
 📺 Rust: Ownership and Borrowing에서는 이런 소유권 이동이 왜 중요한지,  
@@ -118,6 +119,7 @@ fn main() {
 ➡️ &s는 소유권을 넘기지 않고 읽기 전용으로 빌려주는 방식입니다.
 
 ### 3. Mutable Borrowing (가변 참조)
+```rust
 fn add_exclamation(s: &mut String) {
     s.push('!');
 }
@@ -127,6 +129,7 @@ fn main() {
     add_exclamation(&mut s);
     println!("{}", s); // Rust!
 }
+```
 
 ➡️ &mut s는 한 번에 하나만 허용되는 가변 참조입니다. 이 규칙 덕분에 **데이터 경쟁(race condition)**을 방지할 수 있어요.
 
@@ -234,6 +237,7 @@ Rust는 런타임 비용 없이 메모리 안전성을 확보합니다. 이게 �
 | Clone            | 깊은 복사. 소유권 유지하며 값 복제                                    | `let s2 = s1.clone()`       |
 
 ---
+
 
 
 
