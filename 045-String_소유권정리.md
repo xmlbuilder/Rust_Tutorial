@@ -28,7 +28,7 @@ fn main() {
 ![string_s1.png](/image/string_s1.png)
 ### s2 = s1
 ![string_s1=s2.png](/image/string_s1=s2.png)
-### s1
+### s1 drop
 ![string_s1_drop.png](/image/string_s1_drop.png)
 
 
@@ -130,5 +130,6 @@ println!("{}", number_ref); // OK
 
 
 ---
+
 
 
