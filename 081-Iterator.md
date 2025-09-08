@@ -16,6 +16,22 @@ fn main() {
 
     println!("{:?}", names);
 }
+
+
+
+fn main() {
+    let users = [
+            String::from("My"),
+            String::from("Bloody"),
+            String::from("Valentine")
+    ];
+
+    for c in users.iter() {
+        println!("{}", c);
+    }
+    println!("{:?}", users);
+}
+
 ```
 
 ### 🔍 설명
@@ -28,6 +44,13 @@ Hello, james!
 Hello, cameron!
 Hello, indo!
 ["james", "cameron", "indo"]
+
+
+My
+Bloody
+Valentine
+["My", "Bloody", "Valentine"]
+
 ```
 
 
@@ -45,23 +68,6 @@ fn main() {
     println!("{:?}", names); // ❌ 오류 발생: names의 소유권이 이동됨
 }
 
-
-fn main() {
-    let users = [
-            String::from("My"),
-            String::from("Bloody"),
-            String::from("Valentine")
-    ];
-
-    for c in users.iter() {
-        println!("{}", c);
-    }
-    println!("{:?}", users);
-}
-// My
-// Bloody
-// Valentine
-// ["My", "Bloody", "Valentine"]
 
 fn main() {
 
