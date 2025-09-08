@@ -9,19 +9,19 @@ Rust의 제네릭은 다양한 타입을 받아들이는 유연한 코드를 만
 이걸 Rust에서는 **트레이트(Trait)**로 표현합니다.
 
 ## 📛 제네릭의 한계와 트레이트 조건의 필요성
-###  ❌ 문제 코드
+####  ❌ 문제 코드
 ```rust
 fn add<T>(x: T, y: T) -> T {
     x + y
 }
 ```
 
-### ⚠️ 컴파일 오류
+#### ⚠️ 컴파일 오류
 error[E0369]: cannot add `T` to `T`
 = help: consider restricting type parameter `T`
 
 
-### 💡 해결 방법
+#### 💡 해결 방법
 ```rust
 use std::ops::Add;
 
@@ -32,7 +32,7 @@ fn add<T: Add<Output = T>>(x: T, y: T) -> T {
 
 → T 타입이 Add 트레이트를 구현하고, 결과 타입이 T여야 함을 명시
 
-### 전체 코드
+#### 전체 코드
 ```rust
 🧪 문제 코드 (제네릭 타입에 트레이트 조건 없이 사용)
 fn add<T>(x: T, y: T) -> T {
@@ -48,7 +48,7 @@ fn main() {
 ```
 
 
-#### ⚠️ 컴파일 오류 메시지
+##### ⚠️ 컴파일 오류 메시지
 ```
 error[E0369]: cannot add `T` to `T`
  --> src/main.rs:2:5
