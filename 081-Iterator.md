@@ -44,6 +44,41 @@ fn main() {
 
     println!("{:?}", names); // ❌ 오류 발생: names의 소유권이 이동됨
 }
+
+
+fn main() {
+    let users = [
+            String::from("My"),
+            String::from("Bloody"),
+            String::from("Valentine")
+    ];
+
+    for c in users.iter() {
+        println!("{}", c);
+    }
+    println!("{:?}", users);
+}
+// My
+// Bloody
+// Valentine
+// ["My", "Bloody", "Valentine"]
+
+fn main() {
+
+    let users = [
+            String::from("My"),
+            String::from("Bloody"),
+            String::from("Valentine")
+    ];
+
+    for c in users.into_iter() {
+        println!("{}", c);
+    }
+
+    //borrow of moved value: users values borrowed here after move.
+    //println!("{:?}", users); //❌ Compile error
+}
+
 ```
 
 ## 🔍 핵심 차이
