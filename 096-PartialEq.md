@@ -80,8 +80,9 @@ fn main(){
         Command::Execute(path)  => println!("execute {path}")
     }
 }
-    → binary operation `==` cannot be applied to type `Command`
 ```
+#### 에러 발생 → binary operation `==` cannot be applied to type `Command`
+
 ### 🧪 오류 분석
 ```rust
 let p: String = String::new();
