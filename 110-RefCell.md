@@ -1,5 +1,5 @@
 # RefCell
-Rust의 RefCell<T>와 내부 가변성 패턴에 대해 전체적으로 정리. 
+Rust의 RefCell<T>와 내부 가변성 패턴에 대해 전체적으로 정리.  
 이 개념은 Rust의 안전성과 유연성을 동시에 다루는 핵심적인 부분이라, 제대로 이해하면 Rust의 메모리 모델을 훨씬 깊이 있게 다룰 수 있음.
 
 ## 🧠 내부 가변성 (Interior Mutability)이란?
