@@ -154,3 +154,4 @@ if __name__ == "__main__":
 | Python   | `LegacyPrinter`  | `ModernPrinter`    | 상속 기반 (`class Adapter`) | 유연하지만 타입 안전성 낮음     |
 
 ---
+
