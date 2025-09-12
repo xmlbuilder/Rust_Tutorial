@@ -231,7 +231,7 @@ if __name__ == "__main__":
 ### 1. 안쪽부터 바깥쪽으로 해석하는 습관
 Rust의 타입은 중첩 구조가 많기 때문에, 안쪽부터 해석하는 연습이 중요해요.
 예시:
-``rust
+```rust
 Option<Result<String, Error>>
 ```
 
@@ -271,4 +271,5 @@ Rust 지원이 좋은 IDE (예: VSCode + rust-analyzer)를 쓰면
 📦 Vec<Arc<dyn Observer>> = 여러 사람이 공유하는 인터페이스 객체 리스트
 
 ---
+
 
