@@ -2,6 +2,33 @@
 
 Rust에서는 전통적인 객체지향 방식의 Singleton보다는 lazy static 초기화와 **OnceCell / Lazy**를 활용한 안전한 접근 방식이 일반적입니다.
 
+## 클래스 다이아그램
+```mermaid
+classDiagram
+    class Config {
+        +host: String
+        +port: u16
+    }
+
+    class CONFIG {
+        <<static>>
+        OnceCell<Mutex<Config>>
+    }
+
+    class get_config {
+        +get_config() &'static Mutex<Config>
+    }
+
+    class main {
+        +main()
+    }
+
+    CONFIG --> Config : holds
+    get_config --> CONFIG : accesses
+    main --> get_config : calls
+    main --> Config : reads
+```
+
 ## ✅ OnceCell 기반 Singleton
 ```rust
 use once_cell::sync::OnceCell;
