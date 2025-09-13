@@ -1,124 +1,130 @@
-# Proxy
+# Visitor
 
-**프록시 패턴 (Proxy Pattern)** 은 단순한 대리 객체를 넘어서,
-캐싱, 접근 제어, 지연 로딩, 로깅, 원격 호출까지 다양한 기능을 중간에서 처리할 수 있는 강력한 구조적 패턴입니다.
-
-## 🧠 핵심 개념 요약
-| 프록시 유형       | 주요 목적 및 기능 설명                         |
-|------------------|-----------------------------------------------|
-| 가상 프록시       | Lazy Loading: 실제 객체 생성을 지연시켜 성능 최적화 |
-| 보호 프록시       | 접근 제어: 인증, 권한 확인 등 보안 처리           |
-| 캐시 프록시       | 결과 저장: 중복 호출 방지, 성능 향상              |
-| 스마트 프록시     | 로깅, 트랜잭션, 참조 횟수 추적 등 부가 기능 추가   |
-| 원격 프록시       | 네트워크를 통한 원격 객체 접근 (RPC 등)           |
+## 🧠 비지터 패턴이란?
+객체 구조와 그 위에서 수행되는 작업을 분리하는 패턴입니다.
+새로운 작업을 추가할 때 기존 객체 구조를 수정하지 않고도 확장할 수 있어요.
 
 
-## 🦀 Rust 예제: 이미지 로딩 프록시 (지연 + 캐시 + 로깅)
+## 🦀 Rust 예제: Shape 구조에 AreaCalculator 비지터 적용
 ```rust
-trait Image {
-    fn display(&self);
+trait Shape {
+    fn accept(&self, visitor: &dyn Visitor);
 }
 
-// 실제 이미지 객체
-struct RealImage {
-    filename: String,
+struct Circle {
+    radius: f64,
 }
 
-impl RealImage {
-    fn new(filename: &str) -> Self {
-        println!("Loading image from disk: {}", filename);
-        Self {
-            filename: filename.to_string(),
-        }
+struct Rectangle {
+    width: f64,
+    height: f64,
+}
+
+impl Shape for Circle {
+    fn accept(&self, visitor: &dyn Visitor) {
+        visitor.visit_circle(self);
     }
 }
 
-impl Image for RealImage {
-    fn display(&self) {
-        println!("Displaying image: {}", self.filename);
+impl Shape for Rectangle {
+    fn accept(&self, visitor: &dyn Visitor) {
+        visitor.visit_rectangle(self);
     }
 }
 
-// 프록시 객체
-struct ProxyImage {
-    filename: String,
-    real_image: Option<RealImage>,
+trait Visitor {
+    fn visit_circle(&self, circle: &Circle);
+    fn visit_rectangle(&self, rectangle: &Rectangle);
 }
 
-impl ProxyImage {
-    fn new(filename: &str) -> Self {
-        Self {
-            filename: filename.to_string(),
-            real_image: None,
-        }
+struct AreaCalculator;
+
+impl Visitor for AreaCalculator {
+    fn visit_circle(&self, circle: &Circle) {
+        let area = std::f64::consts::PI * circle.radius * circle.radius;
+        println!("Circle area: {:.2}", area);
+    }
+
+    fn visit_rectangle(&self, rectangle: &Rectangle) {
+        let area = rectangle.width * rectangle.height;
+        println!("Rectangle area: {:.2}", area);
     }
 }
 
-impl Image for ProxyImage {
-    fn display(&self) {
-        println!("Proxy: Checking cache and permissions...");
-        let mut image = self.real_image.clone();
-        if image.is_none() {
-            image = Some(RealImage::new(&self.filename));
-        }
-        image.as_ref().unwrap().display();
+fn visit_all<T: Shape>(items: &[T], visitor: &dyn Visitor) {
+    for item in items {
+        item.accept(visitor);
     }
 }
 
 fn main() {
-    let proxy = ProxyImage::new("test.jpg");
-    // 첫 호출: 실제 이미지 로딩 발생
-    proxy.display();
-    // 두 번째 호출: 캐시된 이미지 사용
-    proxy.display();
+    let shapes: Vec<Box<dyn Shape>> = vec![
+        Box::new(Circle { radius: 3.0 }),
+        Box::new(Rectangle { width: 4.0, height: 5.0 }),
+    ];
+
+    let calculator = AreaCalculator;
+
+    for shape in shapes {
+        shape.accept(&calculator);
+    }
 }
-
 ```
-
-이 예제는 RealImage를 실제로 로딩하기 전에 ProxyImage가
-캐시 확인, 로딩 지연, 로깅을 수행하는 구조입니다.
 
 
 ## 🧱 C++ 예제
 ```cpp
 #include <iostream>
+#include <vector>
 #include <memory>
-#include <string>
 
-class Image {
+class Circle;
+class Rectangle;
+
+class Visitor {
 public:
-    virtual void display() = 0;
+    virtual void visit(Circle* c) = 0;
+    virtual void visit(Rectangle* r) = 0;
 };
 
-class RealImage : public Image {
-    std::string filename;
+class Shape {
 public:
-    RealImage(const std::string& fname) : filename(fname) {
-        std::cout << "Loading image: " << filename << "\n";
-    }
-    void display() override {
-        std::cout << "Displaying image: " << filename << "\n";
-    }
+    virtual void accept(Visitor* v) = 0;
 };
 
-class ProxyImage : public Image {
-    std::string filename;
-    std::unique_ptr<RealImage> realImage;
+class Circle : public Shape {
 public:
-    ProxyImage(const std::string& fname) : filename(fname) {}
-    void display() override {
-        std::cout << "Proxy: Checking access...\n";
-        if (!realImage) {
-            realImage = std::make_unique<RealImage>(filename);
-        }
-        realImage->display();
+    double radius;
+    Circle(double r) : radius(r) {}
+    void accept(Visitor* v) override { v->visit(this); }
+};
+
+class Rectangle : public Shape {
+public:
+    double width, height;
+    Rectangle(double w, double h) : width(w), height(h) {}
+    void accept(Visitor* v) override { v->visit(this); }
+};
+
+class AreaCalculator : public Visitor {
+public:
+    void visit(Circle* c) override {
+        std::cout << "Circle area: " << 3.14159 * c->radius * c->radius << "\n";
+    }
+    void visit(Rectangle* r) override {
+        std::cout << "Rectangle area: " << r->width * r->height << "\n";
     }
 };
 
 int main() {
-    ProxyImage proxy("test.jpg");
-    proxy.display();
-    proxy.display();
+    std::vector<std::unique_ptr<Shape>> shapes;
+    shapes.push_back(std::make_unique<Circle>(3.0));
+    shapes.push_back(std::make_unique<Rectangle>(4.0, 5.0));
+
+    AreaCalculator calculator;
+    for (auto& shape : shapes) {
+        shape->accept(&calculator);
+    }
 }
 ```
 
@@ -126,42 +132,47 @@ int main() {
 ## 🧱 C# 예제
 ```csharp
 using System;
+using System.Collections.Generic;
 
-interface IImage {
-    void Display();
+interface IVisitor {
+    void Visit(Circle c);
+    void Visit(Rectangle r);
 }
 
-class RealImage : IImage {
-    private string filename;
-    public RealImage(string fname) {
-        filename = fname;
-        Console.WriteLine("Loading image: " + filename);
-    }
-    public void Display() {
-        Console.WriteLine("Displaying image: " + filename);
-    }
+interface IShape {
+    void Accept(IVisitor visitor);
 }
 
-class ProxyImage : IImage {
-    private string filename;
-    private RealImage realImage;
-    public ProxyImage(string fname) {
-        filename = fname;
+class Circle : IShape {
+    public double Radius { get; }
+    public Circle(double r) => Radius = r;
+    public void Accept(IVisitor visitor) => visitor.Visit(this);
+}
+
+class Rectangle : IShape {
+    public double Width { get; }
+    public double Height { get; }
+    public Rectangle(double w, double h) {
+        Width = w; Height = h;
     }
-    public void Display() {
-        Console.WriteLine("Proxy: Checking access...");
-        if (realImage == null) {
-            realImage = new RealImage(filename);
-        }
-        realImage.Display();
-    }
+    public void Accept(IVisitor visitor) => visitor.Visit(this);
+}
+
+class AreaCalculator : IVisitor {
+    public void Visit(Circle c) =>
+        Console.WriteLine($"Circle area: {Math.PI * c.Radius * c.Radius:F2}");
+    public void Visit(Rectangle r) =>
+        Console.WriteLine($"Rectangle area: {r.Width * r.Height:F2}");
 }
 
 class Program {
     static void Main() {
-        IImage image = new ProxyImage("test.jpg");
-        image.Display();
-        image.Display();
+        List<IShape> shapes = new() {
+            new Circle(3.0),
+            new Rectangle(4.0, 5.0)
+        };
+        var calculator = new AreaCalculator();
+        shapes.ForEach(s => s.Accept(calculator));
     }
 }
 ```
@@ -169,129 +180,121 @@ class Program {
 
 ## 🐍 Python 예제
 ```python
-class Image:
-    def display(self):
-        pass
+class Visitor:
+    def visit_circle(self, circle): pass
+    def visit_rectangle(self, rectangle): pass
 
-class RealImage(Image):
-    def __init__(self, filename):
-        self.filename = filename
-        print(f"Loading image: {filename}")
-    def display(self):
-        print(f"Displaying image: {self.filename}")
+class Shape:
+    def accept(self, visitor): pass
 
-class ProxyImage(Image):
-    def __init__(self, filename):
-        self.filename = filename
-        self.real_image = None
-    def display(self):
-        print("Proxy: Checking access...")
-        if self.real_image is None:
-            self.real_image = RealImage(self.filename)
-        self.real_image.display()
+class Circle(Shape):
+    def __init__(self, radius):
+        self.radius = radius
+    def accept(self, visitor):
+        visitor.visit_circle(self)
+
+class Rectangle(Shape):
+    def __init__(self, width, height):
+        self.width = width
+        self.height = height
+    def accept(self, visitor):
+        visitor.visit_rectangle(self)
+
+class AreaCalculator(Visitor):
+    def visit_circle(self, circle):
+        area = 3.14159 * circle.radius ** 2
+        print(f"Circle area: {area:.2f}")
+    def visit_rectangle(self, rectangle):
+        area = rectangle.width * rectangle.height
+        print(f"Rectangle area: {area:.2f}")
 
 if __name__ == "__main__":
-    image = ProxyImage("test.jpg")
-    image.display()
-    image.display()
+    shapes = [Circle(3.0), Rectangle(4.0, 5.0)]
+    calculator = AreaCalculator()
+    for shape in shapes:
+        shape.accept(calculator)
 ```
 
 
 ## 🧩 Mermaid 클래스 다이어그램 (Rust 구조 기반)
 ```mermaid
 classDiagram
-    class Image {
-        <<interface>>
-        +display()
+    class Shape {
+        <<trait>>
+        +accept(visitor: &Visitor)
     }
 
-    class RealImage {
-        +new(filename)
-        +display()
+    class Circle {
+        +radius: f64
+        +accept(visitor)
     }
 
-    class ProxyImage {
-        +new(filename)
-        +display()
-        -real_image: Option<RealImage>
+    class Rectangle {
+        +width: f64
+        +height: f64
+        +accept(visitor)
     }
 
-    Image <|.. RealImage
-    Image <|.. ProxyImage
-    ProxyImage --> RealImage : lazy load
+    class Visitor {
+        <<trait>>
+        +visit_circle(circle: &Circle)
+        +visit_rectangle(rectangle: &Rectangle)
+    }
+
+    class AreaCalculator {
+        +visit_circle()
+        +visit_rectangle()
+    }
+
+    Shape <|.. Circle
+    Shape <|.. Rectangle
+    Visitor <|.. AreaCalculator
+    Circle --> Visitor : accept()
+    Rectangle --> Visitor : accept()
+
 ```
-
 
 ## ✅ Rust 구조 요약
-| 구성 요소     | 역할 설명                                       |
-|---------------|------------------------------------------------|
-| `Image`       | 공통 인터페이스 (`display`)                     |
-| `RealImage`   | 실제 이미지 로딩 및 표시                        |
-| `ProxyImage`  | 프록시: 지연 로딩, 캐시, 보안 처리 가능         |
-| `main()`      | 클라이언트: 프록시를 통해 이미지 사용           |
-
+| 구성 요소        | 역할 설명                                           |
+|------------------|----------------------------------------------------|
+| `Shape`          | 방문 가능한 요소의 공통 인터페이스 (`accept`)       |
+| `Circle`, `Rectangle` | 실제 요소. `accept()`에서 `vis
 
 ---
 
-## 🧠 Option<T> 주요 메서드 설명
-| 메서드        | 설명                                                                 |
-|---------------|----------------------------------------------------------------------|
-| `is_some()`   | 값이 `Some`이면 `true`, 아니면 `false` 반환                          |
-| `is_none()`   | 값이 `None`이면 `true`, 아니면 `false` 반환                          |
-| `as_ref()`    | `Option<T>` → `Option<&T>`로 변환. 값은 소모하지 않고 참조만 얻음     |
-| `as_mut()`    | `Option<T>` → `Option<&mut T>`로 변환. 가변 참조를 얻음               |
-| `unwrap()`    | `Some` 값을 꺼냄. `None`이면 패닉 발생                                |
-| `unwrap_or(x)`| `Some`이면 그 값을, `None`이면 `x`를 반환                             |
-| `map(f)`      | `Some`이면 `f`를 적용한 결과를 `Some`으로 반환, `None`이면 그대로 `None` |
-| `and_then(f)` | `Some`이면 `f`를 적용해 또 다른 `Option` 반환 (flatMap 느낌)          |
-| `filter(p)`   | `Some`이고 조건 `p`를 만족하면 그대로, 아니면 `None` 반환             |
+# Visitor 패턴 장점
+
+Visitor 패턴은 Java와 C#에서 특히 많이 쓰이는 이유가 있어요—이 언어들은 클래스 기반의 정적 타입 시스템을 갖고 있어서,
+런타임에 instanceof나 switch로 타입 분기하는 대신 Visitor로 타입별 로직을 분리하는 게 훨씬 깔끔하고 확장성이 좋음.
+
+## 🎯 Java / C#에서 Visitor 패턴이 많이 쓰이는 대표 사례
+| 사용 분야             | 적용 예시 또는 대상 객체                          | 수행되는 작업 예시                  |
+|----------------------|--------------------------------------------------|-------------------------------------|
+| 컴파일러 / 파서       | `javac`의 AST 노드 (`AnnotationValue`, `Expr`)   | 타입 검사, 코드 생성, 최적화         |
+| 문서 처리 시스템      | `Paragraph`, `Table`, `Image` 등 문서 요소        | `draw()`, `resize()`, `export()` 등 |
+| UI 컴포넌트 렌더링    | `Button`, `Slider`, `TextBox` 등 위젯             | 렌더링, 이벤트 바인딩, 스타일 적용   |
+| 게임 오브젝트 처리    | `Player`, `Enemy`, `Item`, `Terrain` 등           | 충돌 처리, AI 적용, 렌더링          |
+| 재무/회계 시스템      | `Invoice`, `Transaction`, `TaxRecord` 등          | 세금 계산, 보고서 생성, 감사 처리    |
 
 
-## 🔍 as_ref() 실전 예시
-```rust
-let text: Option<String> = Some("Hello".to_string());
+## 🧠 왜 Visitor가 적합한가?
+- 객체 구조는 그대로 유지하면서
+- 새로운 기능을 외부에서 추가 가능
+- instanceof나 switch 없이 타입별 분기 처리 가능
+- 특히 컬렉션에 다양한 타입이 섞여 있을 때 유용함
 
-// 값을 소모하지 않고 참조로 길이 계산
-let len: Option<usize> = text.as_ref().map(|s| s.len());
-
-println!("{:?}", text); // 여전히 Some("Hello")
+## 📌 실전 예시: 컴파일러에서의 Visitor
+Java 컴파일러 javac는
+- AnnotationValue라는 다양한 타입의 노드가 있고
+- AnnotationValueVisitor가 각 타입에 대해 처리 로직을 갖고 있음
+예를 들어:
+```java
+visitor.visit(ConstantValue);
+visitor.visit(EnumValue);
+visitor.visit(ArrayValue);
 ```
 
-→ as_ref()를 쓰면 text를 그대로 유지하면서 내부 값에 접근할 수 있어요.
+→ 새로운 타입이 추가되어도 Visitor만 확장하면 되므로
+→ 기존 노드 구조는 건드리지 않아도 됨
 
 ---
-
-## C++ unique_ptr 보강
-
-C++에서 unique_ptr을 사용할 때 realImage->display()가 가능한 이유는
-스마트 포인터가 operator->를 오버로드하고 있기 때문입니다.
-
-## 🧠 핵심 개념: unique_ptr의 -> 연산자
-- std::unique_ptr<T>는 내부적으로 T*를 감싸고 있음
-- -> 연산자가 오버로드되어 있어서
-→ unique_ptr<T> ptr;일 때 ptr->method()가 자동으로 get()을 호출한 것처럼 동작함
-- 즉, realImage->display()는 내부적으로 realImage.get()->display()와 같음
-
-## ✅ 예시 비교
-```cpp
-std::unique_ptr<RealImage> realImage = std::make_unique<RealImage>("test.jpg");
-
-// 아래 두 줄은 동일하게 동작함
-realImage->display();           // ✅ 권장 방식
-realImage.get()->display();     // ✅ 가능하지만 덜 직관적
-```
-→ get()은 raw pointer를 직접 얻고 싶을 때만 사용하는 게 좋아요
-→ 일반적인 메서드 호출은 ->로 충분하고, 더 안전하고 깔끔합니다
-
-## 📌 요약 표
-| 표현 방식              | 설명                                      |
-|------------------------|-------------------------------------------|
-| `realImage->display()` | 스마트 포인터의 `operator->`로 자동 연결됨 |
-| `realImage.get()->display()` | raw pointer를 명시적으로 꺼내서 호출       |
-| `get()` 사용 시 주의    | 소유권 없이 접근하므로 dangling 위험 있음   |
-
----
-
-
-
-
