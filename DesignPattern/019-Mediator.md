@@ -258,7 +258,7 @@ if __name__ == "__main__":
 ```
 
 
-🧊 C++
+### 🧊 C++
 ```cpp
 #include <iostream>
 #include <string>
@@ -321,7 +321,7 @@ int main() {
 
 ```
 
-🟪 C#
+### 🟪 C#
 ```csharp
 using System;
 
@@ -388,6 +388,7 @@ class Program {
 | C#     | 인터페이스 + 속성        | 속성으로 mediator 설정      | 이벤트 기반 처리 가능     |
 
 ---
+
 
 
 
