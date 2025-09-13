@@ -123,7 +123,7 @@ int main() {
 ```
 
 
-🧱 C# 예제
+## 🧱 C# 예제
 ```csharp
 using System;
 
@@ -291,6 +291,7 @@ realImage.get()->display();     // ✅ 가능하지만 덜 직관적
 | `get()` 사용 시 주의    | 소유권 없이 접근하므로 dangling 위험 있음   |
 
 ---
+
 
 
 
