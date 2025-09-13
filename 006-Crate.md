@@ -86,7 +86,11 @@ pub mod matrix4;
 ```
 
 이렇게 하면 matrix는 완전히 독립적인 모듈이 되고,
-다른 프로젝트에서 use matrix::matrix3::determinant3;처럼 가져다 쓸 수 있음.
+다른 프로젝트에서 
+```rust
+use matrix::matrix3::determinant3;
+```
+처럼 가져다 쓸 수 있음.
 
 ---
 
