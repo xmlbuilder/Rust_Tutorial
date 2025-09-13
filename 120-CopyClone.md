@@ -173,3 +173,107 @@ fn use_ref<'a>(s: &'a String) {
 
 ---
 
+# 주의 사항 (개념 잘못 이해)
+
+
+# Clone / Copy
+| 🧠 개념 정리: `Clone` vs `Copy` | 호출 방식     | 복사 방식        | 특징                          |
+|----------------------------------|----------------|------------------|-------------------------------|
+| `Clone`                          | `.clone()`     | 명시적 복사      | 깊은 복사 가능, 비용이 있을 수 있음 |
+| `Copy`                           | 자동           | 암묵적 복사      | 경량 타입에 적합, move 대신 복사됨  |
+
+- Copy는 Clone의 경량 버전으로, 소유권을 이동시키지 않고 자동 복사를 허용함
+- Copy가 선언된 타입은 let b = a;처럼 대입하거나 함수 인자로 넘길 때 move가 아닌 복사가 일어남
+
+## 전체 코드
+```rust
+
+#[derive(Clone, Copy, PartialEq, Debug)]
+pub struct Quaternion {
+    pub x: f64,
+    pub y: f64,
+    pub z: f64,
+    pub w: f64,
+}
+
+impl Quaternion {
+    /// self 다음에 next 회전 적용 (R_{self} ∘ R_{next} 아님! 이름 그대로 '순서')
+    pub fn then(self, next: Self) -> Quaternion {
+        self * next // q1 다음 q2 ⇒ q1*q2
+    }
+}
+
+#[test]
+fn then_helpers_match_manual_composition() {
+    let qx = Quaternion::from_axis_angle_deg(Vector3D::new(1.0,0.0,0.0), 90.0);
+    let qz = Quaternion::from_axis_angle_deg(Vector3D::new(0.0,0.0,1.0), 90.0);
+    let v  = Vector3D::new(1.0,0.0,0.0);
+
+    let q_then = qx.then(qz);              // qx 후 qz
+    let r1 = q_then.rotate_vector(v);
+
+    let r2 = qz.rotate_vector(qx.rotate_vector(v));
+    assert!((r1.x-r2.x).abs()<1e-9 && (r1.y-r2.y).abs()<1e-9 && (r1.z-r2.z).abs()<1e-9);
+
+    // Transform도 동일한 의미로 작동
+    let Rx = qx.to_transform();
+    let Rz = qz.to_transform();
+    let t_then = Rx.then(&Rz);              // Rx 후 Rz  →  Rz * Rx
+    let r3 = t_then.transform_vector3d(&v);
+    assert!((r3.x-r2.x).abs()<1e-9 && (r3.y-r2.y).abs()<1e-9 && (r3.z-r2.z).abs()<1e-9);
+    }
+
+```
+
+
+## 🔍 지금 코드에서 일어나는 일
+```rust
+impl Quaternion {
+    pub fn then(self, next: Self) -> Quaternion {
+        self * next
+    }
+}
+```
+
+- self는 Quaternion 타입
+- Quaternion은 #[derive(Clone, Copy)] 되어 있음
+- 따라서 self는 move되지 않고 복사됨
+즉, qx.then(qz)를 호출해도 qx는 여전히 유효하고 이후에도 사용할 수 있어요.
+
+✅ 예시로 확인
+```rust
+let qx = Quaternion::from_axis_angle_deg(...);
+let qz = Quaternion::from_axis_angle_deg(...);
+
+let q_then = qx.then(qz); // self = qx, next = qz
+
+let again = qx.rotate_vector(...); // ✅ qx는 여전히 유효
+```
+
+- qx는 then() 호출 후에도 살아 있음
+- 만약 Copy가 없었다면 qx는 move되고 이후 사용 불가
+
+## 📦 왜 Copy가 가능한가?
+### Rust에서 Copy는 다음 조건을 만족해야 합니다:
+- 모든 필드가 Copy여야 함
+- Drop trait을 구현하지 않아야 함
+### Quaternion은 f64만 포함하므로:
+- f64는 Copy
+- 따라서 Quaternion도 Copy 가능
+
+## 🧠 요약 
+|     조건               | self 소비 방식         | 동작 설명                          |
+|---------------------------|------------------------|-------------------------------------|
+| `#[derive(Clone, Copy)]`  | `self`                 | 값이 자동 복사됨 (move 아님)        |
+| `Copy`                    | `self`                 | 암묵적 복사, 이후에도 원본 사용 가능 |
+| `Clone`                   | `.clone()`             | 명시적 복사 필요, 원본은 move됨     |
+
+---
+
+
+
+
+
+
+
+
